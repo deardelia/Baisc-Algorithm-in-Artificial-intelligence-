@@ -67,16 +67,20 @@ public class GameState {
             int n = this.lastMove;
             for(int i = 2; i <= Math.sqrt(n); i++) {
                 if (n % i == 0) {
-                    if (this.stones[i])
+                    if (this.stones[i]){
                         moves.add(i);
-                    if (this.stones[n/i])
+                    }
+                    if (this.stones[n/i]){
                         moves.add(n/i);
+                    }
                 }
             }
 
             // get multiples
             for (int i = 2; i <= this.size / this.lastMove; i++) {
-                if (this.stones[i*this.lastMove]) moves.add(i*this.lastMove);
+                if (this.stones[i*this.lastMove]) {
+                    moves.add(i*this.lastMove);
+                }
             }
         }
 
@@ -210,5 +214,4 @@ public class GameState {
     public int getSize() {
         return this.size;
     }
-
 }	
