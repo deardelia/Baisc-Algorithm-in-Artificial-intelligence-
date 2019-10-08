@@ -2,9 +2,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.lang.*;
 
+
 public class AlphaBetaPruning {
     public int specifiedDepth = 0;
-    public int currentDepth = 0;
     public int visitedNodes = 0;
     public int evaluateNodes = 0;
     public double finalValue = 0.0;
@@ -12,6 +12,7 @@ public class AlphaBetaPruning {
     public int leafNodes = 0;
     public int firstMove = 0;
     public boolean firstPlayer = true;
+    public int maxDepth = 0;
 
     public AlphaBetaPruning() {
 
@@ -23,13 +24,14 @@ public class AlphaBetaPruning {
      */
     public void printStats() {
         // TODO Add your code here
+        double avgBranch =  (double)(notpronedTree / (visitedNodes - leafNodes));
         System.out.printf("Move: %d\n, " +
-                "Value: %f\n" +
+                "Value: %.2f\n" +
                 "Number of Nodes Visited: %d\n" +
                 "Number of Nodes Evaluated: %d\n" +
                 "Max Depth Reached: %d\n" +
-                "Avg Effective Branching Factor: %f"
-                , firstMove, finalValue, visitedNodes, evaluateNodes, currentDepth, notpronedTree / (visitedNodes - leafNodes));
+                "Avg Effective Branching Factor: %.2f\n"
+                , firstMove, finalValue, visitedNodes, evaluateNodes, maxDepth, avgBranch);
     }
 
     /**
@@ -64,22 +66,24 @@ public class AlphaBetaPruning {
         // TODO Add your code here
         double value = 0.0;
         if (maxPlayer)
-            value = maxvalue(state, alpha, beta);
+            value = maxvalue(state, alpha, beta, 0);
         else
-            value = minvalue(state, alpha, beta);
+            value = minvalue(state, alpha, beta, 0);
         return value;
     }
 
-    private double maxvalue(GameState state, double alpha, double beta){
+    private double maxvalue(GameState state, double alpha, double beta, int depth){
         List<GameState> successors = state.getSuccessors();
+        List<Integer> successorNum = state.getMoves();
+        int index = 0;
         int nTakens = state.removeStones();
 
         visitedNodes += 1;
+        maxDepth = Math.max(maxDepth, depth);
 
-        if (successors.size() == 0 || terminalState(state)) {
+        if (successors.size() == 0 || terminalState(state, depth)) {
             /*if (nTakens % 2 == 0) return -1;
             else return 1;*/
-            currentDepth += 1;
             evaluateNodes += 1;
             if (successors.size() == 0) leafNodes += 1;
             return state.evaluate();
@@ -88,30 +92,32 @@ public class AlphaBetaPruning {
         double value = Double.NEGATIVE_INFINITY;
         for (GameState currentState : successors) {
             notpronedTree += 1;
-            value = Math.max(value, minvalue(currentState, alpha, beta));
+            value = Math.max(value, minvalue(currentState, alpha, beta, depth+1));
             if (value >= beta) {
                 return value;
             }
-            if (firstPlayer && alpha < value) {
-                firstMove = currentState.getLastMove();
+            if (alpha < value) {
+                firstMove = successorNum.get(index);
             }
             alpha = Math.max(alpha, value);
+            index++;
         }
-        currentDepth += 1;
 
         return value;
     }
 
-    private double minvalue(GameState state, double alpha, double beta) {
+    private double minvalue(GameState state, double alpha, double beta, int depth) {
         List<GameState> successors = state.getSuccessors();
+        List<Integer> successorNum = state.getMoves();
+        int index = 0;
         int nTakens = state.removeStones();
 
         visitedNodes += 1;
+        maxDepth = Math.max(maxDepth, depth);
 
-        if (successors.size() == 0 || terminalState(state)) {
+        if (successors.size() == 0 || terminalState(state, depth)) {
             /*if (nTakens % 2 == 0) return -1;
             else return 1;*/
-            currentDepth += 1;
             evaluateNodes += 1;
             if (successors.size() == 0) leafNodes += 1;
             return state.evaluate();
@@ -120,22 +126,23 @@ public class AlphaBetaPruning {
         double value = Double.POSITIVE_INFINITY;
         for (GameState currentState : successors) {
             notpronedTree += 1;
-            value = Math.min(value, maxvalue(currentState, alpha, beta));
+            value = Math.min(value, maxvalue(currentState, alpha, beta, depth+1));
             if (value <= alpha) {
                 return value;
             }
-            if (firstPlayer && beta > value) {
-                firstMove = currentState.getLastMove();
+            if (beta > value) {
+                firstMove = successorNum.get(index);
             }
+
             beta = Math.min(beta, value);
+            index++;
         }
-        currentDepth += 1;
 
         return value;
     }
 
-    private boolean terminalState(GameState state) {
-        if (specifiedDepth != 0 && specifiedDepth == currentDepth) {
+    private boolean terminalState(GameState state, int depth) {
+        if (specifiedDepth != 0 && specifiedDepth == depth) {
             return true;
         }
         return false;
