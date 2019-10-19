@@ -131,7 +131,7 @@ public class DecisionTreeImpl {
 		double maxInformationGain = -1;
 		int attribute = 0;
 
-		for(attribute = 0; attribute < 9; attribute++) {
+		for(attribute = 0; attribute < this.numAttr; attribute++) {
 			for (int threshold = 1; threshold <= 10; threshold++) {
 				attributePair pair = new attributePair(attribute, threshold);
 				double informationGain = 0;
